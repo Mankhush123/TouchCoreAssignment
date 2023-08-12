@@ -1,0 +1,43 @@
+import tensorflow as tf
+import numpy as np
+import cv2
+
+# Load a pre-trained emotion detection model
+emotion_model = tf.keras.applications.VGG16(weights='imagenet', include_top=True)
+emotion_model = tf.keras.Model(inputs=emotion_model.input, outputs=emotion_model.get_layer('fc1').output)
+
+# Define a dictionary of mood filter presets based on emotions
+mood_filters = {
+    'happy': cv2.imread('happy_filter.jpg'),
+    'sad': cv2.imread('sad_filter.jpg'),
+    'angry': cv2.imread('angry_filter.jpg'),
+    # Add more emotions and corresponding filter images
+}
+
+def apply_mood_filter(image_path):
+    # Load and preprocess the image
+    img = tf.keras.preprocessing.image.load_img(image_path, target_size=(224, 224))
+    img_array = tf.keras.preprocessing.image.img_to_array(img)
+    img_array = np.expand_dims(img_array, axis=0)
+    img_array = tf.keras.applications.vgg16.preprocess_input(img_array)
+    
+    # Extract emotions using the emotion detection model
+    emotions = emotion_model.predict(img_array)
+    
+    # Determine the dominant emotion
+    dominant_emotion = np.argmax(emotions)
+    emotion_labels = ['happy', 'sad', 'angry']  # Add more emotions as needed
+    
+    # Apply the corresponding mood filter
+    mood_filter = mood_filters[emotion_labels[dominant_emotion]]
+    
+    # Apply the mood filter to the original image
+    image = cv2.imread(image_path)
+    filtered_image = cv2.addWeighted(image, 0.7, mood_filter, 0.3, 0)
+    
+    return filtered_image
+
+# Example usage
+input_image_path = 'input_photo.jpg'
+output_image = apply_mood_filter(input_image_path)
+cv2.imwrite('output_photo.jpg', output_image)
