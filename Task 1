@@ -1,0 +1,47 @@
+<template>
+  <div>
+    <input type="file" @change="handleFileUpload" />
+    <video ref="videoPlayer" controls @timeupdate="handleTimeUpdate">
+      <source :src="videoUrl" type="video/mp4" />
+    </video>
+    <div class="subtitle-container">
+      <div v-for="subtitle in subtitles" :key="subtitle.id">
+        {{ subtitle.text }}
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+export default {
+  data() {
+    return {
+      videoUrl: '',
+      subtitles: [],
+      currentTime: 0,
+    };
+  },
+  methods: {
+    handleFileUpload(event) {
+      const file = event.target.files[0];
+      this.videoUrl = URL.createObjectURL(file);
+    },
+    handleTimeUpdate(event) {
+      this.currentTime = event.target.currentTime;
+    },
+  },
+};
+</script>
+
+<style>
+.subtitle-container {
+  position: relative;
+}
+</style>
+// To make a vue instance
+import Vue from 'vue';
+import App from './App.vue';
+
+new Vue({
+  render: (h) => h(App),
+}).$mount('#app');
